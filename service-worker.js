@@ -28,21 +28,14 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
-    if(event.request.mode === 'navigate') {
-        event.respondWith((async function() {
-            try {
-                const preloadResponse = await event.preloadResponse;
-                if(preloadResponse) {
-                    return preloadResponse;
-                }
-                const networkResponse = await fetch(event.request);
-                return networkResponse;
-            } catch (error) {
-                console.error("Fetch failed, returning offline page.");
-                const cache = await caches.open(CACHE_NAME);
-                const cachedResponse = await cache.match(event.request);
-                return cachedResponse || fetch(event.request);
-            }
-        })());
-    }
+    // event.respondWith(
+    //     caches.match(event.request)
+    //           .then(function(res) {
+    //               return fetch(event.request) || res;
+    //           })
+    // );
+    event.respondWith((async function() {
+        const res = await caches.match(event.request);
+        return fetch(event.request) || res;
+    })());
 });
